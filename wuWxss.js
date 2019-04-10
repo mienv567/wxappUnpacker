@@ -63,7 +63,7 @@ function doWxss(dir,cb){
 			result[cssFile]+=makeup(data);
 		};
 	}
-	function runVM(name,code){
+   /*function runVM(name,code){
 		let wxAppCode={},handle={cssFile:name};
 		let vm=new VM({sandbox:Object.assign(new GwxCfg(),{__wxAppCode__:wxAppCode,setCssToHead:cssRebuild.bind(handle)})});
 		vm.run(code);
@@ -71,7 +71,21 @@ function doWxss(dir,cb){
 			handle.cssFile=path.resolve(frameName,"..",name);
 			wxAppCode[name]();
 		}
-	}
+	}*/
+	
+	//替换以上代码解决 wxss还原错误
+	
+	function runVM(name,code){
+    let wxAppCode={},handle={cssFile:name};
+    let gg = new GwxCfg();
+    let tsandbox ={$gwx:GwxCfg.prototype["$gwx"],__mainPageFrameReady__:GwxCfg.prototype["$gwx"],__wxAppCode__:wxAppCode,setCssToHead:cssRebuild.bind(handle)};
+    let vm = new VM({sandbox:tsandbox});
+    vm.run(code);
+    for(let name in wxAppCode)if(name.endsWith(".wxss")){
+        handle.cssFile=path.resolve(frameName,"..",name);
+        wxAppCode[name]();
+    }
+}
 	function preRun(dir,frameFile,mainCode,files,cb){
 		wu.addIO(cb);
 		runList[path.resolve(dir,"./app.wxss")]=mainCode;
